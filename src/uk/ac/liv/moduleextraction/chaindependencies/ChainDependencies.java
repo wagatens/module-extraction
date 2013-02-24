@@ -1,7 +1,5 @@
 package uk.ac.liv.moduleextraction.chaindependencies;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -12,7 +10,7 @@ import org.semanticweb.owlapi.model.OWLEntity;
 import org.semanticweb.owlapi.model.OWLLogicalAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
 
-import uk.ac.liv.moduleextraction.util.AxiomComparator;
+import uk.ac.liv.moduleextraction.testing.AcyclicChecker;
 import uk.ac.liv.moduleextraction.util.DefinitorialDepth;
 import uk.ac.liv.moduleextraction.util.ModulePaths;
 import uk.ac.liv.moduleextraction.util.ModuleUtils;
@@ -24,27 +22,34 @@ public class ChainDependencies extends HashMap<OWLClass, DependencySet>{
 
 	private static final long serialVersionUID = 5599458330117570660L;
 
-
+	private HashMap<OWLClass, OWLLogicalAxiom> lhsLookup;
+	
 	public ChainDependencies() {
-
+		lhsLookup = new HashMap<OWLClass, OWLLogicalAxiom>();
 	}
 	
 	public void updateDependenciesWith(List<OWLLogicalAxiom> sortedAxioms){
-		for(Iterator<OWLLogicalAxiom> it = sortedAxioms.iterator(); it.hasNext();){
+		for(Iterator<OWLLogicalAxiom> it = sortedAxioms.iterator(); it.hasNext();)
 			updateDependenciesWith(it.next());
-		}	
 	}
 	
-
 	public void updateDependenciesWith(OWLLogicalAxiom axiom){
 		OWLClass name = (OWLClass) AxiomSplitter.getNameofAxiom(axiom);
 		OWLClassExpression definition = AxiomSplitter.getDefinitionofAxiom(axiom);
-
+		
+		/* Map names to axioms - used for calculating chains of dependencies */
+		lhsLookup.put(name, axiom);
+		
+		/*Calculate dependencies */
 		DependencySet axiomDeps = new DependencySet();
 		addImmediateDependencies(definition,axiomDeps);
 		updateFromDefinition(definition, axiomDeps);
-		
 		put(name, axiomDeps);
+	}
+	
+	/* Find an axiom which was used in calculating the dependencies based on it's name. */
+	public OWLLogicalAxiom lookup(OWLClass cls) {
+		return lhsLookup.get(cls);
 	}
 
 	private void addImmediateDependencies(OWLClassExpression definition, DependencySet axiomDeps) {
@@ -58,24 +63,27 @@ public class ChainDependencies extends HashMap<OWLClass, DependencySet>{
 		for(OWLClass cls : ModuleUtils.getNamedClassesInSignature(definition)){
 			DependencySet clsDependencies = get(cls);
 			if(clsDependencies != null)
-				axiomDeps.addAll(clsDependencies);
+				axiomDeps.mergeWith(cls, clsDependencies);
 		}
 	}
  
-
-	public static void main(String[] args) {
-		OWLOntology ont = OntologyLoader.loadOntology(ModulePaths.getOntologyLocation() + "moduletest/test1.krss");
-		HashMap<OWLClass, Integer> definitorialMap = new DefinitorialDepth(ont.getLogicalAxioms()).getDefinitorialMap();
-		ArrayList<OWLLogicalAxiom> allAxiomsSorted = new ArrayList<OWLLogicalAxiom>(ont.getLogicalAxioms());
-		Collections.sort(allAxiomsSorted, new AxiomComparator(definitorialMap));
-
-		System.out.println(allAxiomsSorted);
-
-		ChainDependencies chain = new ChainDependencies();
-		for(OWLLogicalAxiom axiom : ont.getLogicalAxioms()){
-			chain.updateDependenciesWith(axiom);
-			System.out.println(chain);
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		for(OWLClass cls : keySet()){
+			builder.append(cls + "=" + get(cls) + "\n");
 		}
-
+		return builder.toString();
 	}
+	
+	public static void main(String[] args) {
+		OWLOntology ont = OntologyLoader.loadOntology(ModulePaths.getOntologyLocation() + "moduletest/chaindeps1.krss");
+		DefinitorialDepth defDeps = new DefinitorialDepth(ont);
+		ChainDependencies deps = new ChainDependencies();
+		for(OWLLogicalAxiom ax : defDeps.getDefinitorialSortedList()){
+			deps.updateDependenciesWith(ax);
+		}
+		System.out.println(deps);
+	}
+	
 }

@@ -64,7 +64,7 @@ public class AcyclicChecker {
 				for(Dependency d : toCheck){
 					DependencySet depSet = immediateDependencies.get(d.getValue());
 					if(depSet != null){
-						newDependencies.mergeWith(depSet);
+						newDependencies.addAll(depSet);
 					}
 				}
 				toCheck = newDependencies;

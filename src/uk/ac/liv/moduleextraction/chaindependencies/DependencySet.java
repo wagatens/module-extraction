@@ -3,6 +3,7 @@ package uk.ac.liv.moduleextraction.chaindependencies;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLEntity;
 
 public class  DependencySet extends HashSet<Dependency>{
@@ -17,8 +18,12 @@ public class  DependencySet extends HashSet<Dependency>{
 		return entities;
 	}
 	
-	public void mergeWith(DependencySet dependencySet){
-		addAll(dependencySet);
+	public void mergeWith(OWLClass name, DependencySet dependencySet){
+		for(Dependency d : dependencySet){
+			d.addOrigin(name);
+			add(new Dependency(d.getValue()));
+		}
+		//addAll(dependencySet);
 	}
 	
 }
