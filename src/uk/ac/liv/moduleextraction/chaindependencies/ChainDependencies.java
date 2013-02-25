@@ -34,12 +34,12 @@ public class ChainDependencies extends HashMap<OWLClass, DependencySet>{
 	}
 	
 	public void updateDependenciesWith(OWLLogicalAxiom axiom){
+
 		OWLClass name = (OWLClass) AxiomSplitter.getNameofAxiom(axiom);
 		OWLClassExpression definition = AxiomSplitter.getDefinitionofAxiom(axiom);
-		
 		/* Map names to axioms - used for calculating chains of dependencies */
 		lhsLookup.put(name, axiom);
-		
+
 		/*Calculate dependencies */
 		DependencySet axiomDeps = new DependencySet();
 		addImmediateDependencies(definition,axiomDeps);
@@ -66,6 +66,11 @@ public class ChainDependencies extends HashMap<OWLClass, DependencySet>{
 				axiomDeps.mergeWith(cls, clsDependencies);
 		}
 	}
+	
+	@Override public void clear() {
+		lhsLookup.clear();
+		super.clear();
+	}
  
 	@Override
 	public String toString() {
@@ -77,12 +82,18 @@ public class ChainDependencies extends HashMap<OWLClass, DependencySet>{
 	}
 	
 	public static void main(String[] args) {
-		OWLOntology ont = OntologyLoader.loadOntology(ModulePaths.getOntologyLocation() + "moduletest/chaindeps1.krss");
+		OWLOntology ont = OntologyLoader.loadOntology(
+				ModulePaths.getOntologyLocation() + "moduletest/chaindeps2.krss");
+		
+
 		DefinitorialDepth defDeps = new DefinitorialDepth(ont);
 		ChainDependencies deps = new ChainDependencies();
+		
 		for(OWLLogicalAxiom ax : defDeps.getDefinitorialSortedList()){
+			System.out.println(ax);
 			deps.updateDependenciesWith(ax);
 		}
+		System.out.println();
 		System.out.println(deps);
 	}
 	

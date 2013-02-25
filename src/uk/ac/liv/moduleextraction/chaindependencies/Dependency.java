@@ -13,12 +13,26 @@ public class Dependency {
 		this.origins = new HashSet<OWLEntity>();
 	}
 	
+	public Dependency(Dependency baseDependency) {
+		this.value = baseDependency.value;
+		this.origins = new HashSet<OWLEntity>(baseDependency.origins);
+	}
+	
+	
 	public OWLEntity getValue() {
 		return value;
 	}
 	
 	public void addOrigin(OWLEntity origin){
 		origins.add(origin);
+	}
+	
+	public void addOrigins(HashSet<OWLEntity> gins) {
+		origins.addAll(gins);
+	}
+	
+	public HashSet<OWLEntity> getOrigins() {
+		return origins;
 	}
 	
 	@Override
