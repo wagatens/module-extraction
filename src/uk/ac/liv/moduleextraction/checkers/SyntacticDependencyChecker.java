@@ -34,15 +34,25 @@ public class SyntacticDependencyChecker {
 			intersectEntites.retainAll(signatureAndSigM);
 
 			if(!intersectEntites.isEmpty()){
+				HashSet<OWLClass> toFind = new HashSet<OWLClass>();
 				for(OWLEntity e : intersectEntites){
 					Dependency intersectDep = axiomDepends.getDependencyFor(e);
 					for(OWLEntity origin : intersectDep.getOrigins()){
 						if(origin.isOWLClass()){
-							axiomsWithDeps.add(dependsW.lookup((OWLClass) origin));
+							toFind.add((OWLClass) origin);
 						}
 					}
-				
 				}
+				
+				for(OWLLogicalAxiom ax : W){
+					OWLClass name = (OWLClass) AxiomSplitter.getNameofAxiom(ax);
+					if(toFind.contains(name)){
+						axiomsWithDeps.add(ax);
+					}
+				}
+				
+				
+				
 				result = true;
 				axiomsWithDeps.add(lastAdded);
 				dependsW.clear();

@@ -22,10 +22,8 @@ public class ChainDependencies extends HashMap<OWLClass, DependencySet>{
 
 	private static final long serialVersionUID = 5599458330117570660L;
 
-	private HashMap<OWLClass, OWLLogicalAxiom> lhsLookup;
-	
+
 	public ChainDependencies() {
-		lhsLookup = new HashMap<OWLClass, OWLLogicalAxiom>();
 	}
 	
 	public void updateDependenciesWith(List<OWLLogicalAxiom> sortedAxioms){
@@ -37,8 +35,6 @@ public class ChainDependencies extends HashMap<OWLClass, DependencySet>{
 
 		OWLClass name = (OWLClass) AxiomSplitter.getNameofAxiom(axiom);
 		OWLClassExpression definition = AxiomSplitter.getDefinitionofAxiom(axiom);
-		/* Map names to axioms - used for calculating chains of dependencies */
-		lhsLookup.put(name, axiom);
 
 		/*Calculate dependencies */
 		DependencySet axiomDeps = new DependencySet();
@@ -47,10 +43,6 @@ public class ChainDependencies extends HashMap<OWLClass, DependencySet>{
 		put(name, axiomDeps);
 	}
 	
-	/* Find an axiom which was used in calculating the dependencies based on it's name. */
-	public OWLLogicalAxiom lookup(OWLClass cls) {
-		return lhsLookup.get(cls);
-	}
 
 	private void addImmediateDependencies(OWLClassExpression definition, DependencySet axiomDeps) {
 		for(OWLEntity e : definition.getSignature()){
@@ -67,10 +59,6 @@ public class ChainDependencies extends HashMap<OWLClass, DependencySet>{
 		}
 	}
 	
-	@Override public void clear() {
-		lhsLookup.clear();
-		super.clear();
-	}
  
 	@Override
 	public String toString() {
