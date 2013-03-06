@@ -38,7 +38,10 @@ public class AcyclicChecker {
 	
 	
 	public boolean isAcyclic(){
+		int axiomCount = 0;
 		for(OWLLogicalAxiom axiom : ontology.getLogicalAxioms()){
+			axiomCount++;
+			System.out.println("Checking axiom " + axiomCount + "/" + ontology.getLogicalAxiomCount());
 			if(causesCycle(axiom))
 				return false;
 		}
