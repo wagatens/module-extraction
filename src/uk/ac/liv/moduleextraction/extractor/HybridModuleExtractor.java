@@ -53,7 +53,7 @@ public class HybridModuleExtractor implements Extractor {
 	
 	@Override
 	public Set<OWLLogicalAxiom> extractModule(Set<OWLEntity> signature) {
-		hybridWatch = new Stopwatch().start();
+		hybridWatch = Stopwatch.createStarted();
 		Set<OWLEntity> origSig = new HashSet<OWLEntity>(signature);
 		module = extractStarModule(axioms, signature);
 		boolean sizeChanged = false;

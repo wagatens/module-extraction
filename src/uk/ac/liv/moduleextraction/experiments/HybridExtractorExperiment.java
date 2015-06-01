@@ -49,7 +49,7 @@ public class HybridExtractorExperiment implements Experiment {
 	public void performExperiment(Set<OWLEntity> signature) {
 
 
-		starWatch = new Stopwatch().start();
+		starWatch = Stopwatch.createStarted();
 		//Compute the star module on it's own
 		Set<OWLAxiom> starAxioms = starExtractor.extract(signature);
 		starWatch.stop();
@@ -59,7 +59,7 @@ public class HybridExtractorExperiment implements Experiment {
 		starSize = starModule.size();
 
 
-		hybridWatch = new Stopwatch().start();
+		hybridWatch = Stopwatch.createStarted();
 		//And then the iterated one 
 		itModule = iteratingExtractor.extractModule(signature);
 		itSize = itModule.size();

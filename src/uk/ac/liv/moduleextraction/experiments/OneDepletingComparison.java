@@ -66,7 +66,7 @@ public class OneDepletingComparison implements Experiment {
 
 		Set<OWLLogicalAxiom> hybridModule = starAndHybridExperiment.getHybridModule();
 
-		oneDepletingStopwatch = new Stopwatch().start();
+		oneDepletingStopwatch = Stopwatch.createStarted();
 		oneDepletingExtractor = new OneDepletingModuleExtractor(hybridModule);
 		oneDepletingModule = oneDepletingExtractor.extractModule(signature);
 		oneDepletingStopwatch.stop();

@@ -85,7 +85,7 @@ public class NDepletingModuleExtractor implements Extractor {
 	public Set<OWLLogicalAxiom> extractModule(Set<OWLLogicalAxiom> existingModule, Set<OWLEntity> signature) {
 		resetMetrics();
 
-		nDepWatch = new Stopwatch().start();
+		nDepWatch = Stopwatch.createStarted();
 
 		boolean[] terminology = axiomStore.allAxiomsAsBoolean();
 		allAxioms = axiomStore.getSubsetAsList(terminology);
@@ -218,7 +218,7 @@ public class NDepletingModuleExtractor implements Extractor {
 				System.out.println(f.getName() + ": " + test++);
 				Set<OWLLogicalAxiom> randomSample = ModuleUtils.generateRandomAxioms(ont.getLogicalAxioms(),5);
 
-				Stopwatch samplewatch = new Stopwatch().start();
+				Stopwatch samplewatch = Stopwatch.createStarted();
 				for(OWLLogicalAxiom axiom : randomSample){
 
 

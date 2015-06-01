@@ -41,7 +41,7 @@ public class STARExtractor implements Extractor {
 
     @Override
     public Set<OWLLogicalAxiom> extractModule(Set<OWLEntity> signature) {
-        starWatch = new Stopwatch().start();
+        starWatch = Stopwatch.createStarted();
         SyntacticLocalityModuleExtractor extractor = new SyntacticLocalityModuleExtractor(manager, ontology, ModuleType.STAR);
         Set<OWLAxiom> starModule = extractor.extract(signature);
         starWatch.stop();

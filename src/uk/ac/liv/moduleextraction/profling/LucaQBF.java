@@ -55,7 +55,7 @@ public class LucaQBF {
             System.out.println(ontS);
 
 
-            Stopwatch samplewatch = new Stopwatch().start();
+            Stopwatch samplewatch = Stopwatch.createStarted();
             for(OWLLogicalAxiom axiom : randomSample){
 
 

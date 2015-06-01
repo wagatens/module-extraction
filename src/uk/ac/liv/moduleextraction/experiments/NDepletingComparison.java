@@ -55,7 +55,7 @@ public class NDepletingComparison implements Experiment {
 
 		Set<OWLLogicalAxiom> hybridModule = starAndHybridExperiment.getHybridModule();
 
-		nDepletingStopwatch = new Stopwatch().start();
+		nDepletingStopwatch = Stopwatch.createStarted();
 
 		NDepletingModuleExtractor nDepletingModuleExtractor = new NDepletingModuleExtractor(DOMAIN_SIZE,hybridModule);
 		this.nDepletingModuleExtractor = nDepletingModuleExtractor;

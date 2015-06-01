@@ -40,7 +40,7 @@ public class EquivalentToTerminologyExtractor implements Extractor {
 	
 	@Override
 	public Set<OWLLogicalAxiom> extractModule(Set<OWLLogicalAxiom> existingModule, Set<OWLEntity> signature) {
-		Stopwatch stopwatch = new Stopwatch().start();
+		Stopwatch stopwatch = Stopwatch.createStarted();
 		module =  extractor.extractModule(existingModule, signature);
 		module = processor.postProcessModule(module);
 		stopwatch.stop();

@@ -75,7 +75,7 @@ public class AMEX implements Extractor{
 		resetMetrics();
 		metricBuilder = new ExtractionMetric.MetricBuilder(ExtractionMetric.ExtractionType.AMEX);
 
-		Stopwatch stopwatch = new Stopwatch().start();
+		Stopwatch stopwatch = Stopwatch.createStarted();
 		boolean[] terminology = axiomStore.allAxiomsAsBoolean();
 		module = existingModule;
 		sigUnionSigM = ModuleUtils.getClassAndRoleNamesInSet(existingModule);

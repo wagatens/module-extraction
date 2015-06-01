@@ -52,19 +52,17 @@ public class CycleRemovalMethodExperiment implements Experiment {
 	@Override
 	public void performExperiment(Set<OWLEntity> signature) {
 		
-		starWatch = new Stopwatch();
-		starWatch.start();
+		starWatch = Stopwatch.createStarted();
 		Set<OWLAxiom> starAxioms = starExtractor.extract(signature);
 		starWatch.stop();
 		starModule = ModuleUtils.getLogicalAxioms(starAxioms);
 		starSize = starModule.size();
 		
-		naiveWatch = new Stopwatch();
-		naiveWatch.start();
+		naiveWatch = Stopwatch.createStarted();
 		naiveModule = naiveCycleRemovalExtractor.extractModule(signature);
 		naiveWatch.stop();
 		
-		improvedWatch = new Stopwatch();
+		improvedWatch = Stopwatch.createStarted();
 		improvedWatch.start();
 		improvedModule = improvedCycleRemovalExtractor.extractModule(signature);
 		improvedWatch.stop();
