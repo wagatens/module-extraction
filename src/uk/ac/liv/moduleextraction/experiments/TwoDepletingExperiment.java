@@ -6,7 +6,11 @@ import org.semanticweb.owlapi.model.OWLLogicalAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
 import uk.ac.liv.moduleextraction.extractor.NDepletingModuleExtractor;
 import uk.ac.liv.moduleextraction.metrics.ExtractionMetric;
+import uk.ac.liv.moduleextraction.signature.SigManager;
+import uk.ac.liv.ontologyutils.loader.OntologyLoader;
 import uk.ac.liv.ontologyutils.util.CSVWriter;
+import uk.ac.liv.ontologyutils.util.ModulePaths;
+import uk.ac.liv.ontologyutils.util.ModuleUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,9 +30,9 @@ public class TwoDepletingExperiment implements  Experiment {
     private File sigLocation;
     private Set<OWLEntity> refSig;
     private boolean twoDepletingExtracted = false;
-    private Set<OWLLogicalAxiom> twoDepletingModule = new HashSet<>();
+    private Set<OWLLogicalAxiom> twoDepletingModule;
     private NDepletingModuleExtractor twoDepletingExtractor;
-    private Set<OWLLogicalAxiom> oneDepletingModule = new HashSet<>();
+    private Set<OWLLogicalAxiom> oneDepletingModule;
     private NDepletingModuleExtractor oneDepletingExtractor;
     private Set<OWLLogicalAxiom> hybridModule;
     private HybridExtractorExperiment hybridExperiment;
@@ -42,6 +46,11 @@ public class TwoDepletingExperiment implements  Experiment {
     @Override
     public void performExperiment(Set<OWLEntity> signature) {
 
+        oneDepletingModule = new HashSet<>();
+        twoDepletingModule = new HashSet<>();
+        exactlyTwoModule = new HashSet<>();
+        twoDepletingExtracted = false;
+
         final ScheduledFuture<?> dumpHandler =
                 scheduler.scheduleAtFixedRate(dumpExtraction,10,60,TimeUnit.MINUTES);
 
@@ -49,13 +58,23 @@ public class TwoDepletingExperiment implements  Experiment {
         hybridExperiment = new HybridExtractorExperiment(ontology,originalLocation);
         hybridExperiment.performExperiment(signature);
 
+
+
         hybridModule = hybridExperiment.getHybridModule();
+
+        //ModuleUtils.writeOntology(hybridExperiment.getStarModule(), ModulePaths.getOntologyLocation() + "star-nci.owl");
 
         oneDepletingExtractor = new NDepletingModuleExtractor(1, hybridModule);
         oneDepletingModule = oneDepletingExtractor.extractModule(signature);
 
+        System.out.println("H: " + hybridModule.size());
+        System.out.println("1: " + oneDepletingModule.size());
+        System.out.println(oneDepletingModule.size() == hybridModule.size());
+        System.out.println(!(oneDepletingModule.size() == hybridModule.size()));
         if(!(oneDepletingModule.size() == hybridModule.size())) {
+            System.out.println("HERE");
             twoDepletingExtracted = true;
+
             twoDepletingExtractor = new NDepletingModuleExtractor(2, hybridModule);
 
             //Extract EXACTLY 2 module then join with 1-depleting module
@@ -66,15 +85,15 @@ public class TwoDepletingExperiment implements  Experiment {
 
         dumpHandler.cancel(true);
 
-//        System.out.println("H: " + hybridModule.size());
-//        System.out.println("1: " + oneDepletingModule.size());
-//        System.out.println("2-dep? :" + twoDepletingExtracted);
-//        if(twoDepletingExtracted){
-//            System.out.println("E2E: " + (exactly2Size == twoDepletingModule.size()));
-//            System.out.println("E2: " + exactly2Size);
-//            System.out.println("2: " + twoDepletingModule.size());
-//        }
-//        System.out.println();
+        System.out.println("H: " + hybridModule.size());
+        System.out.println("1: " + oneDepletingModule.size());
+        System.out.println("2-dep? :" + twoDepletingExtracted);
+        if(twoDepletingExtracted){
+            System.out.println("E2E: " + (exactlyTwoModule.size() == twoDepletingModule.size()));
+            System.out.println("E2: " + exactlyTwoModule.size());
+            System.out.println("2: " + twoDepletingModule.size());
+        }
+        System.out.println();
 
     }
 
@@ -108,7 +127,7 @@ public class TwoDepletingExperiment implements  Experiment {
         metricWriter.addMetric("TwoDepSize", (twoDepletingExtracted) ? twoDepletingModule.size() : "NA");
         metricWriter.addMetric("EqualOneTwo", (twoDepletingExtracted) ? String.valueOf(oneDepletingModule.equals(twoDepletingModule)).toUpperCase() : "NA");
         metricWriter.addMetric("EqualTwoExactlyTwo", (twoDepletingExtracted) ? String.valueOf(twoDepletingModule.equals(exactlyTwoModule)).toUpperCase() : "NA");
-        metricWriter.writeCSVFile();
+        metricWriter.printCSVFileToOutput();
 
         ExtractionMetric oneMetric = oneDepletingExtractor.getMetrics();
         ExtractionMetric twoMetric = (twoDepletingExtracted) ? twoDepletingExtractor.getMetrics() : null;
@@ -122,10 +141,23 @@ public class TwoDepletingExperiment implements  Experiment {
         qbfWriter.addMetric("TwoSyntacticChecks", (twoDepletingExtracted) ? twoMetric.getSyntacticChecks() : "NA");
         qbfWriter.addMetric("TwoSeparabilityAxioms", (twoDepletingExtracted) ? twoMetric.getSeparabilityAxiomCount() : "NA");
         qbfWriter.addMetric("TwoTime", (twoDepletingExtracted) ? twoMetric.getTimeTaken() : "NA");
-        qbfWriter.writeCSVFile();
+        qbfWriter.printCSVFileToOutput();
 
 
+    }
 
+    public static void main(String[] args) throws IOException {
+        File ontFile = new File(ModulePaths.getOntologyLocation() + "star-nci.owl");
+        OWLOntology ont = OntologyLoader.loadOntologyAllAxioms(ontFile.getAbsolutePath());
+
+        TwoDepletingExperiment dep = new TwoDepletingExperiment(ont,ontFile);
+
+
+        SigManager man = new SigManager(new File(ModulePaths.getSignatureLocation() + "/two-depleting/" + "Thesaurus_15.04d.owl"));
+        Set<OWLEntity> sig = man.readFile("axiom-1044382871");
+
+        dep.performExperiment(sig);
+        dep.writeMetrics(new File("/tmp"));
 
     }
 
