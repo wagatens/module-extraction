@@ -8,7 +8,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.semanticweb.owlapi.metrics.DLExpressivity;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.util.DLExpressivityChecker;
 
@@ -40,7 +42,6 @@ public class FindMeAnOntology {
     }
 
     public void profileOntologies() throws IOException{
-        System.gc();
         writer = new BufferedWriter(new FileWriter(ModulePaths.getResultLocation() + "/" + file, false));
         File[] ontologyFiles = ontologyDirectory.listFiles();
         Collections.sort(Arrays.asList(ontologyFiles));
@@ -104,31 +105,31 @@ public class FindMeAnOntology {
 
     public static void main(String[] args) throws OWLOntologyCreationException, OWLOntologyStorageException {
 
-//	FindMeAnOntology find = new FindMeAnOntology(new File(ModulePaths.getOntologyLocation() + "/OWL-Corpus-All"), "corpus-profile.csv");
-//	try {
-//		find.profileOntologies();
-//	} catch (IOException e) {
-//		e.printStackTrace();
-//	}
 
-        OWLOntology ont = OntologyLoader.loadOntologyAllAxioms(ModulePaths.getOntologyLocation() + "/examples/1not2.krss");
-        OWLDataFactory f = ont.getOWLOntologyManager().getOWLDataFactory();
 
-        ModuleUtils.remapIRIs(ont,"X");
-        for(OWLLogicalAxiom ax : ont.getLogicalAxioms()){
-            System.out.println(ax);
-        }
+        OWLOntology ont = OntologyLoader.loadOntologyAllAxioms(ModulePaths.getOntologyLocation() + "Bioportal/LiPrO");
+        System.out.println(ont.getLogicalAxiomCount());
+        AxiomTypeProfile profile = new AxiomTypeProfile(ont);
+        profile.printMetrics();
+        ExpressionTypeProfiler exprrr = new ExpressionTypeProfiler();
 
-        Set<OWLEntity> sig = new HashSet<OWLEntity>();
 
-        OWLClass a = f.getOWLClass(IRI.create("X#A"));
-        OWLObjectProperty r = f.getOWLObjectProperty(IRI.create("X#r"));
+        Set<OWLLogicalAxiom> core = new HashSet<>();
+        //core.addAll(ModuleUtils.getCoreAxioms(ont));
+        //System.out.println(core.size());
+        core.addAll(ont.getAxioms(AxiomType.DISJOINT_CLASSES));
 
-        sig.add(a);
-        sig.add(r);
+        OntologyCycleVerifier cycleVerifier = new OntologyCycleVerifier(core);
+        System.out.println("Cyclic?" + cycleVerifier.isCyclic());
+        //cycleVerifier.getCycleCausingAxioms().forEach(System.out::println);
+        cycleVerifier.getBetterCycleCausingAxioms().forEach(System.out::println);
 
-        NDepletingModuleExtractor extractor = new NDepletingModuleExtractor(1,ont.getLogicalAxioms());
-        System.out.println(extractor.extractModule(sig));
+
+      /*  DLExpressivityChecker checker = new DLExpressivityChecker(Collections.singleton(ont));
+        System.out.println(checker.getDescriptionLogicName());*/
+
+
+
 
 
     }

@@ -8,6 +8,7 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.util.DLExpressivityChecker;
 import uk.ac.liv.moduleextraction.experiments.NDepletingExperiment;
 import uk.ac.liv.moduleextraction.experiments.TwoDepletingExperiment;
+import uk.ac.liv.moduleextraction.extractor.NDepletingModuleExtractor;
 import uk.ac.liv.moduleextraction.signature.SigManager;
 import uk.ac.liv.ontologyutils.loader.OntologyLoader;
 import uk.ac.liv.ontologyutils.util.ModulePaths;
@@ -26,25 +27,25 @@ import java.util.Set;
 public class LucaQBF {
 
 
-
     public static void main(String[] args) throws IOException {
 
-        String name = "368d0b5a-aead-4245-a8f2-8eab74b86326_DUUL.owl-QBF";
+        String name = "4f1e9310-9320-452e-948c-5cd5dacc36da_rnao.owl-QBF";
         OWLOntology ont = OntologyLoader.loadOntologyAllAxioms(ModulePaths.getOntologyLocation() + "/OWL-Corpus-All/qbf-only/" + name);
 
         System.out.println(ont.getLogicalAxiomCount());
 
         SigManager man =  new SigManager(new File(ModulePaths.getSignatureLocation() + "/depleting-comparison-only-diff/" + name));
 
-        int i = 0;
-        for(OWLLogicalAxiom ax : ont.getLogicalAxioms()){
-            System.out.println(++i);
-            Set<OWLEntity> sig = ax.getSignature();
-            NDepletingExperiment n = new NDepletingExperiment(3,ont,new File("/tmp/"));
-            n.performExperiment(sig);
-            n.writeMetrics(new File("/tmp/"));
+        Set<OWLEntity> sig = man.readFile("slow-sig");
 
-        }
+        System.out.println(sig);
+
+
+        NDepletingModuleExtractor extractor = new NDepletingModuleExtractor(3,ont.getLogicalAxioms());
+        extractor.extractModule(sig);
+
+
+
 
 
     }
